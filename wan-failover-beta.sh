@@ -1136,12 +1136,17 @@ logger -p 6 -t "${ALIAS}" "Debug - Function: update"
 [[ -z "${updateneeded+x}" ]] &>/dev/null && updateneeded="0"
 [[ -z "${passiveupdate+x}" ]] &>/dev/null && passiveupdate="0"
 
-# Determine Update Channel
-if [[ -n "$(echo ${VERSION} | grep -o "alpha")" ]] &>/dev/null;then
-  [[ "${passiveupdate}" == "0" ]] &>/dev/null && echo -e "${RED}***${ALIAS} current version is an alpha release and does not support automatic updates***${NOCOLOR}"
-  [[ "${updateneeded}" != "3" ]] &>/dev/null && updateneeded="3"
-  return
-elif [[ "${DEVMODE}" == "0" ]] &>/dev/null;then
+# Check if remote updates are allowed
+if [[ "${ALLOW_UPDATES}" != "1" ]] &>/dev/null;then
+  echo -e "${RED}***Updates are disabled*** set ALLOW_UPDATES=1 to enable updates${NOCOLOR}"
+  updateneeded="0"
+  passiveupdate="0"
+  return 0
+fi
+
+# Determine Production or Beta Update Channel
+if [[ "${DEVMODE}" == "0" ]] &>/dev/null;then
+>>>>>>> a08a5ca (feat: Add ALLOW_UPDATES config option to enable/disable remote updating of script)
   DOWNLOADPATH="${REPO}wan-failover.sh"
 elif [[ "${DEVMODE}" == "1" ]] &>/dev/null;then
   DOWNLOADPATH="${REPO}wan-failover-beta.sh"
@@ -1610,6 +1615,10 @@ if [[ "${configdefaultssync}" == "0" ]] &>/dev/null;then
   if [[ -z "$(sed -n '/\bFAILBACKDELAYTIMER=\b/p' "${CONFIGFILE}")" ]] &>/dev/null;then
     logger -p 6 -t "${ALIAS}" "Debug - Creating FAILBACKDELAYTIMER Default: 0"
     echo -e "FAILBACKDELAYTIMER=0" >> ${CONFIGFILE}
+  fi
+  if [[ -z "$(sed -n '/\bALLOW_UPDATES=\b/p' "${CONFIGFILE}")" ]] &>/dev/null;then
+    logger -p 6 -t "${ALIAS}" "Debug - Setting ALLOW_UPDATES Default: Enabled"
+    echo -e "ALLOW_UPDATES=1" >> ${CONFIGFILE}
   fi
 
 # Cleanup Config file of deprecated options
