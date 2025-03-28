@@ -5512,8 +5512,10 @@ done
 # Determine if Failover or Failback
 if [[ "${ACTIVEWAN}" == "${WAN0}" ]] &>/dev/null;then
   SWITCHWANMODE="Failback"
+  /jffs/scripts/uplink-lights.sh primary
 elif [[ "${ACTIVEWAN}" == "${WAN1}" ]] &>/dev/null;then
   SWITCHWANMODE="Failover"
+  /jffs/scripts/uplink-lights.sh secondary
 fi
 
 # Execute Failback Delay Timer
